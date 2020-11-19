@@ -92,20 +92,25 @@ class Stock_Functions:
             if response.status_code == 200:
                 last_referesh = data['Meta Data']["3. Last Refreshed"]
                 self.value= float(data["Time Series (Daily)"][last_referesh]["4. close"])
-                return { "Message": "Successful",
+                return {
+                         "Result": True,
+                         "Message": "Successful",
                          "Market price": self.value,
                          "Date": last_referesh,
                          "Market data": data }
             elif response.status_code == 404:
-                return { "Message": "404 error"}
+                return { "Result": False,
+                         "Message": "404 error"}
         except KeyError:
-            return { "Message": "Stock does not exist"}
+            return {
+                "Result" : False,
+                "Message": "Stock does not exist"}
 
     def purchase_stock(self, username, stock_symbol, quantity):
 
         stock_query = self.search_stock(stock_symbol)
-        if stock_query[Message] == "Successful":
-
+        if stock_query['Result']:
+            
             response = self.table.scan(
                 FilterExpression=Attr("username").eq(user)
             )
