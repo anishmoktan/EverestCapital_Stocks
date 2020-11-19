@@ -16,28 +16,70 @@ class Stock_Functions:
         self.columns = ["Cash", "Portfolio_Raw", "Portfolio_Updated", "ROI", "Total_Networth"]   # providing values for the colmuns
         self.table = self.DB.Table(self.__Tablename__)
 
-    def initiate_account(self, username):
-        response = self.table.put_item(
-            Item={
-                self.Primary_Column_Name: username,
-                self.columns[0]: 10000,
-                self.columns[1]: {},
-                self.columns[2]: {},
-                self.columns[3]: 0,
-                self.columns[4]: 10000
-            }
-        if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+    def initiate_account(self, username): #Needs to  be triggered to give user default money
+
+        if (self.account_exists(username)):
             return {
-                "Result": True,
-                "Error": None,
-                "Description": "User's stock DB was created succesfully",
+                "Result": False,
+                "Message" : "Account already in the DB so using present account data"
+            }
+
+        else:
+            response = self.table.put_item(
+                Item={
+                    self.Primary_Column_Name: username,
+                    self.columns[0]: 10000,
+                    self.columns[1]: {},
+                    self.columns[2]: {},
+                    self.columns[3]: 0,
+                    self.columns[4]: 10000
+                }
+            )
+            if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+                return {
+                    "Result": True,
+                    "Error": None,
+                    "Message": "User's stock DB was created succesfully",
+                }
+            else:
+                return  {
+                    "Result": False,
+                    "Error": "Database error",
+                    "Message": "Database error, account not in the initial DB"
+                }
+
+    def account_exists(self,username):
+        response = self.table.scan(
+            FilterExpression=Attr("Username").eq(username)
+        )
+        if reponse["Items"]:
+            return True
+        else:
+            return False
+
+    def authinticate_user(self,username):
+
+        response = self.table.scan(
+            FilterExpression=Attr("Username").eq(username)
+        )
+
+        if (len(response["Items"]) > 0):
+            return {
+
+                "Result" : True,
+                "Error" : None,
+                "Cash" : response['Items'][0]["Cash"],
+                "Portfolio_Raw" : response['Items'][0]["Portfolio_Raw"],
+                "Portfolio_Updated" : response['Items'][0]["Portfolio_Updated"],
+                "ROI" : response['Items'][0]["ROI"],
+                "Total_Networth" : response['Items'][0]["Total_Networth"]
             }
         else:
-            return  {
-                "Result": False,
-                "Error": "Database error",
-                "Description": "Database error",
+            return {
+                "Result" : False,
+                "Error" : "Username not found"
             }
+
 
     def search_stock(self, stock_symbol):
         stock_symbol = stock_symbol.upper()
