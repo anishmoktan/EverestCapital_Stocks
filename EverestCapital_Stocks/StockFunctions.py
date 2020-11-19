@@ -95,9 +95,9 @@ class Stock_Functions:
                 return {
                          "Result": True,
                          "Message": "Successful",
-                         "Market price": self.value,
+                         "Market_price": self.value,
                          "Date": last_referesh,
-                         "Market data": data }
+                         "Market_data": data }
             elif response.status_code == 404:
                 return { "Result": False,
                          "Message": "404 error"}
@@ -109,13 +109,14 @@ class Stock_Functions:
     def purchase_stock(self, username, stock_symbol, quantity):
 
         stock_query = self.search_stock(stock_symbol)
+        
         if stock_query['Result']:
             
             response = self.table.scan(
                 FilterExpression=Attr("username").eq(user)
             )
             if len(response["Items"]) > 0:
-
+            
                 cash = response["Items"][0]['Cash']
                 portfolio = response["Items"][0]['Portfolio_Raw']
                 updated_portfolio = response["Items"][0]['Portfolio_Updated']
@@ -126,33 +127,30 @@ class Stock_Functions:
                     return { "Message": "Not enough cash for purchse"
                     }
                 else:
-                    cash = cash - (stock_query["Market price"] * quantity)
+                    cash = cash - (stock_query["Market_price"] * quantity)
 
                     if stock_symbol in portfolio:
-                        portfolio[stock_symbol][stock_query["Date"]] = [quantity,stock_query["Market price"]]
+
+                        inside = portfolio[stock_symbol]
+                        inside[stock_query["Date"]] = [quantity,stock_query["Market_price"]]
+
+                        updated_portfolio = updated_portfolio(portfolio,stock_query["Date"])
+
+                        
 
 
-
-
-                        response = self.table.update_item( Key={
-                        'username': username
-                        },
-
-
-
-                        UpdateExpression="set Cash=:a, Portfolio_Raw=:b, Portfolio_Updated=:c, ROI=:d, Total_Networth=:e",
-                        ExpressionAttributeValues={
-                         # ':n': New_BlogName,
-                            ':a': Cash,
-                            ':b': Portfolio_Raw,
-                            ':c': Portfolio_Updated,
-                            ':d': ROI,
-                            ':e': Total_Networth
-                            }
-
+                        res = self.table.update_item(
+                            key={'Username': username},
+                            UpdateExpression = "set Cash=:a, Portfolio_Raw=:b, Portfolio_Updated=:c, ROI=:d, Total_Networth=:e",
+                            ExpressionAttributeValues={
+                            # ':n': New_BlogName,
+                                ':a': Cash,
+                                ':b': Portfolio_Raw,
+                                ':c': Portfolio_Updated,
+                                ':d': ROI,
+                                ':e': Total_Networth
+                                }
                         )
-
-
 
                         if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
                         return {
@@ -171,7 +169,6 @@ class Stock_Functions:
                     else:
                         portfolio[stock_symbol]= {stock_query["Date"]:[quantity,stock_query["Market price"]}
 
-                
 
             else:
                 return{
@@ -180,9 +177,23 @@ class Stock_Functions:
                     "Description": "User info was not updated"
                 }
         else:
-            return { "Message": "Error with stock search"
+            return {
+                "Message": "Error with stock search"
+                }
+    
+    def update_port(self,raw_portfolio,date_today):
+        updated_port={}
+        for stock in portfolio:
+            access = portfolio[stock]
+            quant=0
+        
+            for date in access:
+                quant = quant + access[date][0]
 
-                    }
+            updated_port[stock]= {date_today:[quant,self.search_stock(stock)["Market_price"]]}
+
+        return updated_port
+
 
 
 
