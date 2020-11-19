@@ -13,10 +13,10 @@ class Stock_Functions:
         self.DB = boto3.resource('dynamodb')
         self.Primary_Column_Name = "Username"
         # self.Primary_key = 1
-        self.columns = ["Cash", "Portfolio_Raw", "Portfolio_Updated", "ROI", "Total Networth"]   # providing values for the colmuns
+        self.columns = ["Cash", "Portfolio_Raw", "Portfolio_Updated", "ROI", "Total_Networth"]   # providing values for the colmuns
         self.table = self.DB.Table(self.__Tablename__)
 
-    def initiate_account(username):
+    def initiate_account(self, username):
         response = self.table.put_item(
             Item={
                 self.Primary_Column_Name: username,
@@ -39,7 +39,7 @@ class Stock_Functions:
                 "Description": "Database error",
             }
 
-    def stock_price(stock_symbol):
+    def search_stock(self, stock_symbol):
         stock_symbol = stock_symbol.upper()
         base_url  = "https://www.alphavantage.co/query?"
         key = 1
@@ -51,18 +51,96 @@ class Stock_Functions:
                 last_referesh = data['Meta Data']["3. Last Refreshed"]
                 self.value= float(data["Time Series (Daily)"][last_referesh]["4. close"])
                 return { "Message": "Successful",
-                        "Market price" : self.value }
+                         "Market price": self.value,
+                         "Date": last_referesh,
+                         "Market data": data }
             elif response.status_code == 404:
                 return { "Message": "404 error"}
         except KeyError:
             return { "Message": "Stock does not exist"}
 
-    def purchase_stock(stock_symbol):
-        stock_query = self.stock_price(stock_symbol)
+    def purchase_stock(self, username, stock_symbol, quantity):
+
+        stock_query = self.search_stock(stock_symbol)
         if stock_query[Message] == "Successful":
 
+            response = self.table.scan(
+                FilterExpression=Attr("username").eq(user)
+            )
+            if len(response["Items"]) > 0:
 
-    def sell_stock(stock_symbol):
+                cash = response["Items"][0]['Cash']
+                portfolio = response["Items"][0]['Portfolio_Raw']
+                updated_portfolio = response["Items"][0]['Portfolio_Updated']
+                roi = response["Items"][0]['ROI']
+                net_worth = response["Items"][0]['Total Networth']
+
+                if (stock_query["Market price"] * quantity) > cash:
+                    return { "Message": "Not enough cash for purchse"
+                    }
+                else:
+                    cash = cash - (stock_query["Market price"] * quantity)
+
+                    if stock_symbol in portfolio:
+                        portfolio[stock_symbol][stock_query["Date"]] = [quantity,stock_query["Market price"]]
+
+
+
+
+                        response = self.table.update_item( Key={
+                        'username': username
+                        },
+
+
+
+                        UpdateExpression="set Cash=:a, Portfolio_Raw=:b, Portfolio_Updated=:c, ROI=:d, Total_Networth=:e",
+                        ExpressionAttributeValues={
+                         # ':n': New_BlogName,
+                            ':a': Cash,
+                            ':b': Portfolio_Raw,
+                            ':c': Portfolio_Updated,
+                            ':d': ROI,
+                            ':e': Total_Networth
+                            }
+
+                        )
+
+
+
+                        if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+                        return {
+                            "Result": True,
+                            "Error": None,
+                            "Description": "Database was updated successfully",
+                        }
+                        else:
+                            return {
+                                "Result": False,
+                                "Error": "Database error",
+                                "Description": "Database error",
+                            }
+
+
+                    else:
+                        portfolio[stock_symbol]= {stock_query["Date"]:[quantity,stock_query["Market price"]}
+
+                
+
+            else:
+                return{
+                    "Result": False,
+                    "Error": "DB error",
+                    "Description": "User info was not updated"
+                }
+        else:
+            return { "Message": "Error with stock search"
+
+                    }
+
+
+
+
+    def sell_stock(self,stock_symbol):
         stock_query = self.stock_price(stock_symbol)
         if stock_query[Message] == "Successful":
 
