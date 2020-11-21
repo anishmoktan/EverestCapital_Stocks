@@ -91,11 +91,13 @@ class Stock_Functions:
             data = response.json()
             if response.status_code == 200:
                 last_referesh = data['Meta Data']["3. Last Refreshed"]
-                self.value= float(data["Time Series (Daily)"][last_referesh]["4. close"])
+                self.value_low = float(data["Time Series (Daily)"][last_referesh]["3. low"])
+                self.value_high = float(data["Time Series (Daily)"][last_referesh]["2. high")
                 return {
                          "Result": True,
                          "Message": "Successful",
-                         "Market_price": self.value,
+                         "Market_price_low": self.value_low,
+                         "Market_price_high": self.value_high,
                          "Date": last_referesh,
                          "Market_data": data }
             elif response.status_code == 404:
@@ -128,12 +130,12 @@ class Stock_Functions:
                         "Message": "Not enough cash for purchse"
                     }
                 else:
-                    Cash = Cash - (stock_query["Market_price"] * quantity)
+                    Cash = Cash - (stock_query["Market_price_low"] * quantity)
 
                     if stock_symbol in Portfolio_Raw:
 
                         inside = Portfolio_Raw[stock_symbol]
-                        inside[stock_query["Date"]] = [quantity,stock_query["Market_price"]]
+                        inside[stock_query["Date"]] = [quantity,stock_query["Market_price_low"]]
 
                         Portfolio_Updated = self.update_portfolio(portfolio_raw,stock_query["Date"])
 
@@ -227,7 +229,7 @@ class Stock_Functions:
             for date in access:
                 quant = quant + access[date][0]
 
-            updated_port[stock]= {date_today:[quant,self.search_stock(stock)["Market_price"]]}
+            updated_port[stock]= {date_today:[quant,self.search_stock(stock)["Market_price_high"]]}
 
         return updated_port
 
@@ -249,13 +251,9 @@ class Stock_Functions:
             "ROI" : (total_updated_worth-total_raw_worth)/total_raw_worth
             }
 
-
-
-
-
-    def sell_stock(self,stock_symbol):
+    def sell_stock(self,username,stock_symbol,quantity):
         stock_query = self.stock_price(stock_symbol)
-        if stock_query[Message] == "Successful":
+        if stock_query["Message"] == "Successful":
 
         #   if response.status_code == 200:
         #       print('\nWe were able to find the value of the stock!')
