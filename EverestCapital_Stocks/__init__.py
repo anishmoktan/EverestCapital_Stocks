@@ -10,6 +10,12 @@ def search_stock():
     initiate = search.initiate_account(username)
     return initiate
 
+@app.route("/activate-account", methods=['POST']) #Shold show the historical graph with current price to buy 
+def search_stock():
+    res = request.json
+    username = res["Username"]
+    authenticate = search.authenticate_account(username)
+    return authenticate
 
 @app.route("/search-stock", methods=['POST']) #Shold show the historical graph with current price to buy 
 def search_stock():
