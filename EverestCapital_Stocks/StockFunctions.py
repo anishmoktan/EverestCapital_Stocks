@@ -80,7 +80,6 @@ class Stock_Functions:
                 "Error" : "Username not found"
             }
 
-
     def search_stock(self, stock_symbol):
         stock_symbol = stock_symbol.upper()
         base_url  = "https://www.alphavantage.co/query?"
