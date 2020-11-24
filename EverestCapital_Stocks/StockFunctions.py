@@ -259,8 +259,6 @@ class Stock_Functions:
         #   elif response.status_code == 404:
         #       print('Sorry we could not find the stock you were looking for')
         #       return(self.search_stock)
-    
-
 
     #For solving calculations:
     #  port= { 'AAPL':{"2020-11-17":[2,150],"2020-11-16":[3,160]} }
