@@ -262,7 +262,6 @@ class Stock_Functions:
 
     #For solving calculations:
     #  port= { 'AAPL':{"2020-11-17":[2,150],"2020-11-16":[3,160]} }
-
     # access=port['AAPL']
     # for i in access:
     # print(access[i][0]*access[i][1])
