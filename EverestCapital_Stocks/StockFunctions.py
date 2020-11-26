@@ -16,7 +16,7 @@ class Stock_Functions:
         self.columns = ["Cash", "Portfolio_Raw", "Portfolio_Updated", "ROI", "Total_Networth"]   # providing values for the colmuns
         self.table = self.DB.Table(self.__Tablename__)
 
-    def initiate_account(self, username): #Needs to  be triggered to give user default money
+    def initiate_account(self, username):  #Needs to  be triggered to give user default money
 
         if (self.account_exists(username)):
             return {
