@@ -38,6 +38,5 @@ def sell_stock():
     res = request.json
     stock_name = res["Stock_Name"]
     stock_price = search(stock_name)
-    
     pass
 
