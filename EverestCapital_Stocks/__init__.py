@@ -29,7 +29,6 @@ def buy_stock():
     res = request.json
     stock_name = res["Stock_Name"]
     quantity = int(res["Quantity"])
-
     purchase = search.purchase_stock(stock_symbol)
     return purchase
 
