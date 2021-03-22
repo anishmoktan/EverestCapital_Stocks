@@ -169,7 +169,6 @@ class Stock_Functions:
                                 "Description": "Database error",
                             }
 
-
                     else:
 
                         Portfolio_Raw[stock_symbol]= {stock_query["Date"]:[quantity,stock_query["Market price"]}
@@ -206,7 +205,6 @@ class Stock_Functions:
                                 "Error": "Database error",
                                 "Description": "Database error",
                             }
-
 
             else:
                 return{

@@ -38,4 +38,3 @@ def sell_stock():
     stock_name = res["Stock_Name"]
     stock_price = search(stock_name)
     pass
-
